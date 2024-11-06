@@ -17,51 +17,100 @@ final class GildedRose
     public function updateQuality(): void
     {
         foreach ($this->items as $item) {
-            if ($item->name != 'Aged Brie' and $item->name != 'Backstage passes to a TAFKAL80ETC concert') {
-                if ($item->quality > 0) {
-                    if ($item->name != 'Sulfuras, Hand of Ragnaros') {
-                        $item->quality = $item->quality - 1;
-                    }
-                }
-            } else {
-                if ($item->quality < 50) {
-                    $item->quality = $item->quality + 1;
-                    if ($item->name == 'Backstage passes to a TAFKAL80ETC concert') {
-                        if ($item->sellIn < 11) {
-                            if ($item->quality < 50) {
-                                $item->quality = $item->quality + 1;
-                            }
-                        }
-                        if ($item->sellIn < 6) {
-                            if ($item->quality < 50) {
-                                $item->quality = $item->quality + 1;
-                            }
-                        }
-                    }
-                }
-            }
+            switch ($item->name) {
+                case 'Aged Brie':
+                    $this->updateAgedBrie($item);
+                    break;
 
-            if ($item->name != 'Sulfuras, Hand of Ragnaros') {
-                $item->sellIn = $item->sellIn - 1;
-            }
+                case 'Backstage passes to a TAFKAL80ETC concert':
+                    $this->updateBackstagePasses($item);
+                    break;
 
-            if ($item->sellIn < 0) {
-                if ($item->name != 'Aged Brie') {
-                    if ($item->name != 'Backstage passes to a TAFKAL80ETC concert') {
-                        if ($item->quality > 0) {
-                            if ($item->name != 'Sulfuras, Hand of Ragnaros') {
-                                $item->quality = $item->quality - 1;
-                            }
-                        }
-                    } else {
-                        $item->quality = $item->quality - $item->quality;
-                    }
-                } else {
-                    if ($item->quality < 50) {
-                        $item->quality = $item->quality + 1;
-                    }
-                }
+                case 'Conjured Mana Cake':
+                    $this->updateConjured($item);
+                    break;
+
+                case 'Sulfuras, Hand of Ragnaros':
+                    break;
+
+                default:
+                    $this->updateDefault($item);
+                    break;
             }
+        }
+    }
+
+    /**
+     * @param Item $item
+     */
+    private function updateAgedBrie(Item $item): void
+    {
+        $this->incrementQuality($item);
+        $item->sellIn--;
+    }
+    
+    /**
+     * @param Item $item
+     */
+    private function updateBackstagePasses(Item $item): void
+    {
+        $this->incrementQuality($item);
+
+        if ($item->sellIn < 11) {
+            $this->incrementQuality($item);
+        }
+
+        if ($item->sellIn < 6) {
+            $this->incrementQuality($item);
+        }
+
+        $item->sellIn--;
+
+        if ($item->sellIn < 0) {
+            $item->quality = 0;
+        }
+    }
+
+    /**
+     * @param Item $item
+     */
+    private function updateDefault(Item $item): void
+    {
+        $this->decrementQuality($item);
+        $item->sellIn--;
+
+        if ($item->sellIn < 0) {
+            $this->decrementQuality($item);
+        }
+    }
+
+    /**
+     * @param Item $item
+     */
+    private function updateConjured(Item $item): void
+    {
+        $this->decrementQuality($item);
+        $this->decrementQuality($item);
+        $item->sellIn--;
+    }
+
+    /**
+     * @param Item $item
+     */
+    private function incrementQuality(Item $item): void
+    {
+        if ($item->quality < 50) {
+            $item->quality++;
+        }
+    }
+
+    /**
+     * @param Item $item
+     */
+    private function decrementQuality(Item $item): void
+    {
+        if ($item->quality > 0) {
+            $item->quality--;
         }
     }
 }
